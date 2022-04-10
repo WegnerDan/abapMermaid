@@ -17,4 +17,4 @@ diagram->set_source_code_string(    |graph TD\n|
                                  && |B --> D[Server02]\n| ).
 diagram->display( ).
 ```
-![image](https://user-images.githubusercontent.com/6908247/162641337-447a93e1-57dd-403f-a2bb-a79fa17c219d.png)
+![image](https://user-images.githubusercontent.com/6908247/162644750-43fa7f39-2610-4da9-963f-3beec23d9143.png) ![image](https://user-images.githubusercontent.com/6908247/162644775-c2aba0bc-6144-4471-b69e-6e2e8add5187.png)

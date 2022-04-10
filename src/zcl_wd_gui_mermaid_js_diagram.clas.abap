@@ -1,6 +1,8 @@
 CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
   PUBLIC SECTION.
     TYPES:
+      ty_html_line         TYPE c LENGTH 512,
+      ty_html_lines        TYPE STANDARD TABLE OF ty_html_line WITH DEFAULT KEY,
       ty_source_code_lines TYPE STANDARD TABLE OF string WITH DEFAULT KEY.
     CLASS-DATA:
       default_background_color TYPE string READ-ONLY,
@@ -14,6 +16,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
                             source_code TYPE string OPTIONAL
                   RAISING   zcx_wd_gui_mermaid_js_diagram,
       display RAISING zcx_wd_gui_mermaid_js_diagram,
+      get_current_html_lines RETURNING VALUE(result) TYPE ty_html_lines,
       get_html_viewer RETURNING VALUE(result) TYPE REF TO cl_gui_html_viewer,
       set_source_code_string IMPORTING source_code TYPE string,
       set_source_code_table IMPORTING source_code_lines TYPE ty_source_code_lines,
@@ -27,9 +30,6 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       get_font_size RETURNING VALUE(result) TYPE string,
       set_font_size IMPORTING font_size TYPE string.
   PROTECTED SECTION.
-    TYPES:
-      ty_html_line  TYPE c LENGTH 512,
-      ty_html_lines TYPE STANDARD TABLE OF ty_html_line WITH DEFAULT KEY.
     METHODS:
       generate_html RETURNING VALUE(result) TYPE ty_html_lines.
   PRIVATE SECTION.
@@ -38,6 +38,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
     DATA:
       html_viewer      TYPE REF TO cl_gui_html_viewer,
       html_is_current  TYPE abap_bool,
+      html_lines       TYPE ty_html_lines,
       mermaid_js_url   TYPE c LENGTH 256,
       background_color TYPE string,
       source_code      TYPE string,
@@ -48,7 +49,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
+CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
 
 
   METHOD class_constructor.
@@ -102,14 +103,6 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_html_viewer.
-* ---------------------------------------------------------------------
-    result = html_viewer.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
   METHOD display.
 * ---------------------------------------------------------------------
     IF html_is_current = abap_true.
@@ -125,7 +118,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
     ENDIF.
 
 * ---------------------------------------------------------------------
-    DATA(html_lines) = generate_html( ).
+    html_lines = generate_html( ).
 
 * ---------------------------------------------------------------------
     DATA assigned_url TYPE cnht_url.
@@ -154,32 +147,6 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
         MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
         WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
     ENDIF.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD get_source_code_string.
-* ---------------------------------------------------------------------
-    result = source_code.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD set_source_code_string.
-* ---------------------------------------------------------------------
-    me->source_code = source_code.
-    html_is_current = abap_false.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD set_source_code_table.
-* ---------------------------------------------------------------------
-    set_source_code_string( concat_lines_of( table = source_code_lines
-                                             sep = cl_abap_char_utilities=>newline ) ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -233,9 +200,9 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD set_background_color.
+  METHOD get_current_html_lines.
 * ---------------------------------------------------------------------
-    me->background_color = background_color.
+    result = html_lines.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -249,25 +216,9 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD set_font_color.
-* ---------------------------------------------------------------------
-    me->font_color = font_color.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
   METHOD get_font_name.
 * ---------------------------------------------------------------------
     result = font_name.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD set_font_name.
-* ---------------------------------------------------------------------
-    me->font_name = font_name.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -281,6 +232,46 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_html_viewer.
+* ---------------------------------------------------------------------
+    result = html_viewer.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD get_source_code_string.
+* ---------------------------------------------------------------------
+    result = source_code.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_background_color.
+* ---------------------------------------------------------------------
+    me->background_color = background_color.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_font_color.
+* ---------------------------------------------------------------------
+    me->font_color = font_color.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_font_name.
+* ---------------------------------------------------------------------
+    me->font_name = font_name.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
   METHOD set_font_size.
 * ---------------------------------------------------------------------
     me->font_size = font_size.
@@ -289,4 +280,20 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD set_source_code_string.
+* ---------------------------------------------------------------------
+    me->source_code = source_code.
+    html_is_current = abap_false.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_source_code_table.
+* ---------------------------------------------------------------------
+    set_source_code_string( concat_lines_of( table = source_code_lines
+                                             sep = cl_abap_char_utilities=>newline ) ).
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
 ENDCLASS.

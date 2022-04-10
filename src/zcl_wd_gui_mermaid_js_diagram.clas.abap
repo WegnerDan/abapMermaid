@@ -60,6 +60,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       ty_html_lines        TYPE STANDARD TABLE OF ty_html_line WITH DEFAULT KEY,
       ty_source_code_lines TYPE STANDARD TABLE OF string WITH DEFAULT KEY.
     CLASS-DATA:
+      gui_dark_theme_active    TYPE abap_bool READ-ONLY,
       default_background_color TYPE string READ-ONLY,
       default_font_color       TYPE string READ-ONLY,
       default_font_name        TYPE string READ-ONLY,
@@ -90,6 +91,9 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       get_configuration RETURNING VALUE(result) TYPE ty_configuration,
       set_configuration IMPORTING configuration TYPE ty_configuration.
   PROTECTED SECTION.
+    CLASS-METHODS:
+      check_gui_dark_theme,
+      set_default_config.
     METHODS:
       convert_config2json RETURNING VALUE(result) TYPE string,
       generate_html RETURNING VALUE(result) TYPE ty_html_lines.
@@ -132,49 +136,8 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
     DATA(fontsize_str) = condense( CONV string( fontsize_i / 10000 ) ).
 
 * ---------------------------------------------------------------------
-    default_config-theme = 'default'.
-    default_config-log_level = 'fatal'.
-    default_config-security_level = 'strict'.
-    default_config-start_on_load = abap_true.
-    default_config-arrow_marker_absolute = abap_false.
-    default_config-er-diagram_padding = 20.
-    default_config-er-layout_direction = 'TB'.
-    default_config-er-min_entity_width = 100.
-    default_config-er-min_entity_height = 75.
-    default_config-er-entity_padding = 15.
-    default_config-er-stroke = 'gray'.
-    default_config-er-fill = 'honeydew'.
-    default_config-er-font_size = 12.
-    default_config-er-use_max_width = abap_true.
-    default_config-flowchart-diagram_padding = 8.
-    default_config-flowchart-html_labels = abap_true.
-    default_config-flowchart-curve = 'basis'.
-    default_config-sequence-diagram_margin_x = 50.
-    default_config-sequence-diagram_margin_y = 10.
-    default_config-sequence-actor_margin = 50.
-    default_config-sequence-width = 150.
-    default_config-sequence-height = 65.
-    default_config-sequence-box_margin = 10.
-    default_config-sequence-box_text_margin = 5.
-    default_config-sequence-note_margin = 10.
-    default_config-sequence-message_margin = 35.
-    default_config-sequence-message_align = 'center'.
-    default_config-sequence-mirror_actors = abap_true.
-    default_config-sequence-bottom_margin_adj = 1.
-    default_config-sequence-use_max_width = abap_true.
-    default_config-sequence-right_angles = abap_false.
-    default_config-sequence-show_sequence_numbers = abap_false.
-    default_config-gantt-title_top_margin = 25.
-    default_config-gantt-bar_height = 20.
-    default_config-gantt-bar_gap = 4.
-    default_config-gantt-top_padding = 50.
-    default_config-gantt-left_padding = 75.
-    default_config-gantt-grid_line_start_padding = 35.
-    default_config-gantt-font_size = 11.
-    default_config-gantt-font_family = '"Open Sans". sans-serif'.
-    default_config-gantt-number_section_styles = 4.
-    default_config-gantt-axis_format = '%Y-%m-%d'.
-    default_config-gantt-top_axis = abap_false.
+    check_gui_dark_theme( ).
+    set_default_config( ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -439,6 +402,82 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 * ---------------------------------------------------------------------
     set_source_code_string( concat_lines_of( table = source_code_lines
                                              sep = cl_abap_char_utilities=>cr_lf ) ).
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD check_gui_dark_theme.
+* ---------------------------------------------------------------------
+    cl_gui_resources=>get_themename( IMPORTING themename = DATA(themename) ).
+    IF themename IS NOT INITIAL.
+      IF themename CS 'dark'.
+        gui_dark_theme_active = abap_true.
+      ENDIF.
+    ELSE.
+      cl_gui_resources=>get_background_color( EXPORTING  id     = cl_gui_resources=>col_background_level1
+                                                         state  = 0
+                                              IMPORTING  color  = DATA(gui_color)
+                                              EXCEPTIONS OTHERS = 1 ).
+      DATA(gui_background_color_hsl) = zcl_wd_color_util=>convert_gui2hsl( gui_color ).
+      IF gui_background_color_hsl-l < 50.
+        gui_dark_theme_active = abap_true.
+      ENDIF.
+    ENDIF.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_default_config.
+* ---------------------------------------------------------------------
+    IF gui_dark_theme_active = abap_true.
+      default_config-theme = 'dark'.
+    ELSE.
+      default_config-theme = 'default'.
+    ENDIF.
+    default_config-log_level = 'fatal'.
+    default_config-security_level = 'strict'.
+    default_config-start_on_load = abap_true.
+    default_config-arrow_marker_absolute = abap_false.
+    default_config-er-diagram_padding = 20.
+    default_config-er-layout_direction = 'TB'.
+    default_config-er-min_entity_width = 100.
+    default_config-er-min_entity_height = 75.
+    default_config-er-entity_padding = 15.
+    default_config-er-stroke = 'gray'.
+    default_config-er-fill = 'honeydew'.
+    default_config-er-font_size = 12.
+    default_config-er-use_max_width = abap_true.
+    default_config-flowchart-diagram_padding = 8.
+    default_config-flowchart-html_labels = abap_true.
+    default_config-flowchart-curve = 'basis'.
+    default_config-sequence-diagram_margin_x = 50.
+    default_config-sequence-diagram_margin_y = 10.
+    default_config-sequence-actor_margin = 50.
+    default_config-sequence-width = 150.
+    default_config-sequence-height = 65.
+    default_config-sequence-box_margin = 10.
+    default_config-sequence-box_text_margin = 5.
+    default_config-sequence-note_margin = 10.
+    default_config-sequence-message_margin = 35.
+    default_config-sequence-message_align = 'center'.
+    default_config-sequence-mirror_actors = abap_true.
+    default_config-sequence-bottom_margin_adj = 1.
+    default_config-sequence-use_max_width = abap_true.
+    default_config-sequence-right_angles = abap_false.
+    default_config-sequence-show_sequence_numbers = abap_false.
+    default_config-gantt-title_top_margin = 25.
+    default_config-gantt-bar_height = 20.
+    default_config-gantt-bar_gap = 4.
+    default_config-gantt-top_padding = 50.
+    default_config-gantt-left_padding = 75.
+    default_config-gantt-grid_line_start_padding = 35.
+    default_config-gantt-font_size = 11.
+    default_config-gantt-font_family = '"Open Sans". sans-serif'.
+    default_config-gantt-number_section_styles = 4.
+    default_config-gantt-axis_format = '%Y-%m-%d'.
+    default_config-gantt-top_axis = abap_false.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.

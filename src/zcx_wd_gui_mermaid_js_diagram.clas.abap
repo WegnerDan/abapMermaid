@@ -1,4 +1,4 @@
-CLASS zcx_wd_gui_mermaid_js_diagram DEFINITION PUBLIC INHERITING FROM cx_static_check CREATE PUBLIC.
+CLASS zcx_wd_gui_mermaid_js_diagram DEFINITION PUBLIC INHERITING FROM cx_dynamic_check CREATE PUBLIC.
   PUBLIC SECTION.
     INTERFACES:
       if_t100_dyn_msg,

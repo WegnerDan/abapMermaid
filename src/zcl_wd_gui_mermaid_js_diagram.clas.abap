@@ -1,19 +1,76 @@
 CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
   PUBLIC SECTION.
+    CONSTANTS:
+      html_line_length TYPE i VALUE 255.
     TYPES:
-      ty_html_line         TYPE c LENGTH 512,
+      BEGIN OF ty_configuration,
+        theme                 TYPE string,
+        log_level             TYPE string,
+        security_level        TYPE string,
+        start_on_load         TYPE abap_bool,
+        arrow_marker_absolute TYPE abap_bool,
+        BEGIN OF er,
+          diagram_padding   TYPE i,
+          layout_direction  TYPE string,
+          min_entity_width  TYPE i,
+          min_entity_height TYPE i,
+          entity_padding    TYPE i,
+          stroke            TYPE string,
+          fill              TYPE string,
+          font_size         TYPE i,
+          use_max_width     TYPE abap_bool,
+        END OF er,
+        BEGIN OF flowchart,
+          diagram_padding TYPE i,
+          html_labels     TYPE abap_bool,
+          curve           TYPE string,
+        END OF flowchart,
+        BEGIN OF sequence,
+          diagram_margin_x      TYPE i,
+          diagram_margin_y      TYPE i,
+          actor_margin          TYPE i,
+          width                 TYPE i,
+          height                TYPE i,
+          box_margin            TYPE i,
+          box_text_margin       TYPE i,
+          note_margin           TYPE i,
+          message_margin        TYPE i,
+          message_align         TYPE string,
+          mirror_actors         TYPE abap_bool,
+          bottom_margin_adj     TYPE i,
+          use_max_width         TYPE abap_bool,
+          right_angles          TYPE abap_bool,
+          show_sequence_numbers TYPE abap_bool,
+        END OF sequence,
+        BEGIN OF gantt,
+          title_top_margin        TYPE i,
+          bar_height              TYPE i,
+          bar_gap                 TYPE i,
+          top_padding             TYPE i,
+          left_padding            TYPE i,
+          grid_line_start_padding TYPE i,
+          font_size               TYPE i,
+          font_family             TYPE string,
+          number_section_styles   TYPE i,
+          axis_format             TYPE string,
+          top_axis                TYPE abap_bool,
+        END OF gantt,
+      END OF ty_configuration,
+      ty_html_line         TYPE c LENGTH html_line_length,
       ty_html_lines        TYPE STANDARD TABLE OF ty_html_line WITH DEFAULT KEY,
       ty_source_code_lines TYPE STANDARD TABLE OF string WITH DEFAULT KEY.
     CLASS-DATA:
       default_background_color TYPE string READ-ONLY,
       default_font_color       TYPE string READ-ONLY,
       default_font_name        TYPE string READ-ONLY,
-      default_font_size        TYPE string READ-ONLY.
+      default_font_size        TYPE string READ-ONLY,
+      default_config           TYPE ty_configuration READ-ONLY.
     CLASS-METHODS:
       class_constructor.
     METHODS:
-      constructor IMPORTING parent      TYPE REF TO cl_gui_container
-                            source_code TYPE string OPTIONAL
+      constructor IMPORTING parent        TYPE REF TO cl_gui_container
+                            source_code   TYPE string OPTIONAL
+                            configuration TYPE ty_configuration OPTIONAL
                   RAISING   zcx_wd_gui_mermaid_js_diagram,
       display RAISING zcx_wd_gui_mermaid_js_diagram,
       get_current_html_table RETURNING VALUE(result) TYPE ty_html_lines,
@@ -29,9 +86,12 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       get_font_name RETURNING VALUE(result) TYPE string,
       set_font_name IMPORTING font_name TYPE string,
       get_font_size RETURNING VALUE(result) TYPE string,
-      set_font_size IMPORTING font_size TYPE string.
+      set_font_size IMPORTING font_size TYPE string,
+      get_configuration RETURNING VALUE(result) TYPE ty_configuration,
+      set_configuration IMPORTING configuration TYPE ty_configuration.
   PROTECTED SECTION.
     METHODS:
+      convert_config2json RETURNING VALUE(result) TYPE string,
       generate_html RETURNING VALUE(result) TYPE ty_html_lines.
   PRIVATE SECTION.
     CONSTANTS:
@@ -40,6 +100,8 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       html_viewer      TYPE REF TO cl_gui_html_viewer,
       html_is_current  TYPE abap_bool,
       html_lines       TYPE ty_html_lines,
+      configuration    TYPE ty_configuration,
+      config_json      TYPE string,
       mermaid_js_url   TYPE c LENGTH 256,
       background_color TYPE string,
       source_code      TYPE string,
@@ -70,6 +132,51 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
     DATA(fontsize_str) = condense( CONV string( fontsize_i / 10000 ) ).
 
 * ---------------------------------------------------------------------
+    default_config-theme = 'default'.
+    default_config-log_level = 'fatal'.
+    default_config-security_level = 'strict'.
+    default_config-start_on_load = abap_true.
+    default_config-arrow_marker_absolute = abap_false.
+    default_config-er-diagram_padding = 20.
+    default_config-er-layout_direction = 'TB'.
+    default_config-er-min_entity_width = 100.
+    default_config-er-min_entity_height = 75.
+    default_config-er-entity_padding = 15.
+    default_config-er-stroke = 'gray'.
+    default_config-er-fill = 'honeydew'.
+    default_config-er-font_size = 12.
+    default_config-er-use_max_width = abap_true.
+    default_config-flowchart-diagram_padding = 8.
+    default_config-flowchart-html_labels = abap_true.
+    default_config-flowchart-curve = 'basis'.
+    default_config-sequence-diagram_margin_x = 50.
+    default_config-sequence-diagram_margin_y = 10.
+    default_config-sequence-actor_margin = 50.
+    default_config-sequence-width = 150.
+    default_config-sequence-height = 65.
+    default_config-sequence-box_margin = 10.
+    default_config-sequence-box_text_margin = 5.
+    default_config-sequence-note_margin = 10.
+    default_config-sequence-message_margin = 35.
+    default_config-sequence-message_align = 'center'.
+    default_config-sequence-mirror_actors = abap_true.
+    default_config-sequence-bottom_margin_adj = 1.
+    default_config-sequence-use_max_width = abap_true.
+    default_config-sequence-right_angles = abap_false.
+    default_config-sequence-show_sequence_numbers = abap_false.
+    default_config-gantt-title_top_margin = 25.
+    default_config-gantt-bar_height = 20.
+    default_config-gantt-bar_gap = 4.
+    default_config-gantt-top_padding = 50.
+    default_config-gantt-left_padding = 75.
+    default_config-gantt-grid_line_start_padding = 35.
+    default_config-gantt-font_size = 11.
+    default_config-gantt-font_family = '"Open Sans". sans-serif'.
+    default_config-gantt-number_section_styles = 4.
+    default_config-gantt-axis_format = '%Y-%m-%d'.
+    default_config-gantt-top_axis = abap_false.
+
+* ---------------------------------------------------------------------
   ENDMETHOD.
 
 
@@ -79,6 +186,13 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
 * ---------------------------------------------------------------------
     set_source_code_string( source_code ).
+
+* ---------------------------------------------------------------------
+    IF configuration IS SUPPLIED.
+      set_configuration( configuration ).
+    ELSE.
+      set_configuration( default_config ).
+    ENDIF.
 
 * ---------------------------------------------------------------------
     background_color = default_background_color.
@@ -99,6 +213,16 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
         MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
         WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
     ENDIF.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD convert_config2json.
+* ---------------------------------------------------------------------
+    result = /ui2/cl_json=>serialize( data = configuration
+                                      compress = abap_true
+                                      pretty_name = /ui2/cl_json=>pretty_mode-camel_case ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -155,39 +279,34 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
   METHOD generate_html.
 * ---------------------------------------------------------------------
-    DATA(html_stub) =  |<!doctype html><html><head>\n|                          ##NO_TEXT
-                    && |<style>\n|                                              ##NO_TEXT
-                    &&     |body \{\n|                                          ##NO_TEXT
-                    &&         |overflow: hidden;\n|                            ##NO_TEXT
-                    &&         |font-size: { font_size }pt;\n|                  ##NO_TEXT
-                    &&         |font-family: "{ font_name }";\n|                ##NO_TEXT
-                    &&         |color: { font_color };\n|                       ##NO_TEXT
-                    &&         |background-color: { background_color };\n|      ##NO_TEXT
-                    &&     |\}\n|                                               ##NO_TEXT
-                    && |</style>\n|                                             ##NO_TEXT
-                    && |<script src="{ mermaid_js_url }"></script>\n|           ##NO_TEXT
-                    && |</head><body>\n|                                        ##NO_TEXT
-                    &&     |<script>\n|                                         ##NO_TEXT
-                    &&         |mermaid.initialize(\{ startOnLoad: true \});\n| ##NO_TEXT
-                    &&     |</script>\n|                                        ##NO_TEXT
-                    && |<div class="mermaid">\n|                                ##NO_TEXT.
+    DATA(html) =  |<!doctype html><html><head>\n|                          ##NO_TEXT
+               && |<style>\n|                                              ##NO_TEXT
+               &&     |body \{\n|                                          ##NO_TEXT
+               &&         |overflow: hidden;\n|                            ##NO_TEXT
+               &&         |font-size: { font_size }pt;\n|                  ##NO_TEXT
+               &&         |font-family: "{ font_name }";\n|                ##NO_TEXT
+               &&         |color: { font_color };\n|                       ##NO_TEXT
+               &&         |background-color: { background_color };\n|      ##NO_TEXT
+               &&     |\}\n|                                               ##NO_TEXT
+               && |</style>\n|                                             ##NO_TEXT
+               && |<script src="{ mermaid_js_url }"></script>\n|           ##NO_TEXT
+               && |</head><body>\n|                                        ##NO_TEXT
+               &&     |<script>\n|                                         ##NO_TEXT
+               &&         |var config = { config_json };\n|                ##NO_TEXT
+               &&         |mermaid.initialize(config);\n|                  ##NO_TEXT
+               &&     |</script>\n|                                        ##NO_TEXT
+               && |<div class="mermaid">\n|                                ##NO_TEXT
+               && source_code
+               && |\n</div></body></html>| ##NO_TEXT.
 
 * ---------------------------------------------------------------------
-    APPEND html_stub TO result.
-
-* ---------------------------------------------------------------------
-    SPLIT source_code AT cl_abap_char_utilities=>newline INTO TABLE DATA(source_code_lines).
-    LOOP AT source_code_lines ASSIGNING FIELD-SYMBOL(<source_code_line>).
-      <source_code_line> =  replace( val = <source_code_line>
-                                     sub = cl_abap_char_utilities=>cr_lf(1)
-                                     with = `` )
-                         && cl_abap_char_utilities=>cr_lf.
-      APPEND <source_code_line> TO result.
-    ENDLOOP.
-
-
-* ---------------------------------------------------------------------
-    APPEND |</div></body></html>| TO result ##NO_TEXT.
+    DATA(pos) = strlen( html ).
+    WHILE pos > html_line_length.
+      APPEND html(html_line_length) TO result.
+      SHIFT html LEFT BY html_line_length PLACES.
+      pos = pos - html_line_length.
+    ENDWHILE.
+    APPEND html(pos) TO result.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -201,9 +320,9 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_current_html_table.
+  METHOD get_configuration.
 * ---------------------------------------------------------------------
-    result = html_lines.
+    result = me->configuration.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -213,6 +332,14 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 * ---------------------------------------------------------------------
     result = concat_lines_of( table = html_lines
                               sep = cl_abap_char_utilities=>cr_lf ).
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD get_current_html_table.
+* ---------------------------------------------------------------------
+    result = html_lines.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -266,6 +393,15 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD set_configuration.
+* ---------------------------------------------------------------------
+    me->configuration = configuration.
+    config_json = convert_config2json( ).
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
   METHOD set_font_color.
 * ---------------------------------------------------------------------
     me->font_color = font_color.
@@ -306,5 +442,6 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
+
 
 ENDCLASS.

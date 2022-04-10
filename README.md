@@ -1,7 +1,7 @@
 # abapMermaid
 Integrate [Mermaid Diagrams](https://github.com/mermaid-js/mermaid) in SAP GUI Containers
 
-Source Code of mermaid is included as SMW0 Object (downloaded from `https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js`)
+Source Code of mermaid release 9.0.0 is included as SMW0 Object (downloaded from `https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js`)
 
 ## Disclaimer
 This is a work in progress, there are bugs. The background color of the HTML container is determined with cl_gui_resources, but this might not work correctly if corrections described in [SAP Note 3002961](https://launchpad.support.sap.com/#/notes/3002961) are not applied in the System. 

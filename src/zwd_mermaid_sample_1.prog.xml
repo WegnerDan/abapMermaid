@@ -6,6 +6,7 @@
     <NAME>ZWD_MERMAID_SAMPLE_1</NAME>
     <DBAPL>S</DBAPL>
     <SUBC>1</SUBC>
+    <RLOAD>E</RLOAD>
     <FIXPT>X</FIXPT>
     <LDBNAME>D$S</LDBNAME>
     <UCCHECK>X</UCCHECK>
@@ -13,8 +14,8 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>mermaid test</ENTRY>
-     <LENGTH>12</LENGTH>
+     <ENTRY>Mermaid Sample 1</ENTRY>
+     <LENGTH>16</LENGTH>
     </item>
    </TPOOL>
   </asx:values>

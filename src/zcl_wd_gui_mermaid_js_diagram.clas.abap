@@ -16,7 +16,8 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
                             source_code TYPE string OPTIONAL
                   RAISING   zcx_wd_gui_mermaid_js_diagram,
       display RAISING zcx_wd_gui_mermaid_js_diagram,
-      get_current_html_lines RETURNING VALUE(result) TYPE ty_html_lines,
+      get_current_html_table RETURNING VALUE(result) TYPE ty_html_lines,
+      get_current_html_string RETURNING VALUE(result) TYPE string,
       get_html_viewer RETURNING VALUE(result) TYPE REF TO cl_gui_html_viewer,
       set_source_code_string IMPORTING source_code TYPE string,
       set_source_code_table IMPORTING source_code_lines TYPE ty_source_code_lines,
@@ -49,7 +50,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
+CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
 
   METHOD class_constructor.
@@ -154,7 +155,7 @@ CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
 
   METHOD generate_html.
 * ---------------------------------------------------------------------
-    DATA(html_stub) =  |<!doctype html><html><head><meta charset="utf-8">\n|    ##NO_TEXT
+    DATA(html_stub) =  |<!doctype html><html><head>\n|                          ##NO_TEXT
                     && |<style>\n|                                              ##NO_TEXT
                     &&     |body \{\n|                                          ##NO_TEXT
                     &&         |overflow: hidden;\n|                            ##NO_TEXT
@@ -180,7 +181,7 @@ CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
       <source_code_line> =  replace( val = <source_code_line>
                                      sub = cl_abap_char_utilities=>cr_lf(1)
                                      with = `` )
-                         && cl_abap_char_utilities=>newline.
+                         && cl_abap_char_utilities=>cr_lf.
       APPEND <source_code_line> TO result.
     ENDLOOP.
 
@@ -200,9 +201,18 @@ CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_current_html_lines.
+  METHOD get_current_html_table.
 * ---------------------------------------------------------------------
     result = html_lines.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD get_current_html_string.
+* ---------------------------------------------------------------------
+    result = concat_lines_of( table = html_lines
+                              sep = cl_abap_char_utilities=>cr_lf ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -292,8 +302,9 @@ CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
   METHOD set_source_code_table.
 * ---------------------------------------------------------------------
     set_source_code_string( concat_lines_of( table = source_code_lines
-                                             sep = cl_abap_char_utilities=>newline ) ).
+                                             sep = cl_abap_char_utilities=>cr_lf ) ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
+
 ENDCLASS.

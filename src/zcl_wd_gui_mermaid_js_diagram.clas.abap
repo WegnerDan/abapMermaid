@@ -140,7 +140,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
 * ---------------------------------------------------------------------
     cl_gui_resources=>get_fontsize( IMPORTING fontsize = DATA(fontsize_i) ).
-    DATA(fontsize_str) = condense( CONV string( fontsize_i / 10000 ) ).
+    default_font_size = condense( CONV string( fontsize_i / 10000 ) ).
 
 * ---------------------------------------------------------------------
     check_gui_dark_theme( ).

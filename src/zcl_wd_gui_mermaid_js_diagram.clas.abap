@@ -69,9 +69,10 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
     CLASS-METHODS:
       class_constructor.
     METHODS:
-      constructor IMPORTING parent        TYPE REF TO cl_gui_container
-                            source_code   TYPE string OPTIONAL
-                            configuration TYPE ty_configuration OPTIONAL
+      constructor IMPORTING parent              TYPE REF TO cl_gui_container
+                            source_code         TYPE string OPTIONAL
+                            configuration       TYPE ty_configuration OPTIONAL
+                            allow_empty_control TYPE abap_bool DEFAULT abap_false
                   RAISING   zcx_wd_gui_mermaid_js_diagram,
       display RAISING zcx_wd_gui_mermaid_js_diagram,
       get_current_html_table RETURNING VALUE(result) TYPE ty_html_lines,
@@ -89,29 +90,35 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       get_font_size RETURNING VALUE(result) TYPE string,
       set_font_size IMPORTING font_size TYPE string,
       get_configuration RETURNING VALUE(result) TYPE ty_configuration,
-      set_configuration IMPORTING configuration TYPE ty_configuration.
+      set_configuration IMPORTING configuration TYPE ty_configuration,
+      get_configuration_json RETURNING VALUE(result) TYPE string,
+      set_configuration_json IMPORTING config_json TYPE string.
   PROTECTED SECTION.
     CLASS-METHODS:
       check_gui_dark_theme,
       set_default_config.
     METHODS:
-      convert_config2json RETURNING VALUE(result) TYPE string,
+      convert_config2json IMPORTING config        TYPE ty_configuration
+                          RETURNING VALUE(result) TYPE string,
+      convert_json2config IMPORTING config_json   TYPE string
+                          RETURNING VALUE(result) TYPE ty_configuration,
       generate_html RETURNING VALUE(result) TYPE ty_html_lines.
   PRIVATE SECTION.
     CONSTANTS:
       object_id_mermaid_js_library TYPE w3objid VALUE 'ZWD_MERMAID_JS_LIBRARY' ##NO_TEXT.
     DATA:
-      html_viewer      TYPE REF TO cl_gui_html_viewer,
-      html_is_current  TYPE abap_bool,
-      html_lines       TYPE ty_html_lines,
-      configuration    TYPE ty_configuration,
-      config_json      TYPE string,
-      mermaid_js_url   TYPE c LENGTH 256,
-      background_color TYPE string,
-      source_code      TYPE string,
-      font_color       TYPE string,
-      font_name        TYPE string,
-      font_size        TYPE string.
+      html_viewer           TYPE REF TO cl_gui_html_viewer,
+      html_is_current       TYPE abap_bool,
+      html_lines            TYPE ty_html_lines,
+      empty_control_allowed TYPE abap_bool,
+      configuration         TYPE ty_configuration,
+      config_json           TYPE string,
+      mermaid_js_url        TYPE c LENGTH 256,
+      background_color      TYPE string,
+      source_code           TYPE string,
+      font_color            TYPE string,
+      font_name             TYPE string,
+      font_size             TYPE string.
 ENDCLASS.
 
 
@@ -162,6 +169,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
     font_color = default_font_color.
     font_size = default_font_size.
     font_name = default_font_name.
+    empty_control_allowed = allow_empty_control.
 
 * ---------------------------------------------------------------------
     html_viewer->load_mime_object( EXPORTING object_id  = object_id_mermaid_js_library
@@ -191,6 +199,16 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD convert_json2config.
+* ---------------------------------------------------------------------
+    /ui2/cl_json=>deserialize( EXPORTING json = config_json
+                                         pretty_name = /ui2/cl_json=>pretty_mode-camel_case
+                               CHANGING data = result ).
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
   METHOD display.
 * ---------------------------------------------------------------------
     IF html_is_current = abap_true.
@@ -199,7 +217,8 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
     html_is_current = abap_true.
 
 * ---------------------------------------------------------------------
-    IF source_code IS INITIAL.
+    IF source_code IS INITIAL
+    AND empty_control_allowed = abap_false.
       RAISE EXCEPTION TYPE zcx_wd_gui_mermaid_js_diagram
         EXPORTING
           textid = zcx_wd_gui_mermaid_js_diagram=>source_code_initial.
@@ -253,14 +272,19 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
                &&     |\}\n|                                               ##NO_TEXT
                && |</style>\n|                                             ##NO_TEXT
                && |<script src="{ mermaid_js_url }"></script>\n|           ##NO_TEXT
-               && |</head><body>\n|                                        ##NO_TEXT
+               && |</head><body>\n| ##NO_TEXT.
+    IF source_code IS NOT INITIAL.
+      html     =  html
                &&     |<script>\n|                                         ##NO_TEXT
                &&         |var config = { config_json };\n|                ##NO_TEXT
                &&         |mermaid.initialize(config);\n|                  ##NO_TEXT
                &&     |</script>\n|                                        ##NO_TEXT
                && |<div class="mermaid">\n|                                ##NO_TEXT
                && source_code
-               && |\n</div></body></html>| ##NO_TEXT.
+               && |\n</div>| ##NO_TEXT.
+    ENDIF.
+    html       =  html
+               && |</body></html>| ##NO_TEXT.
 
 * ---------------------------------------------------------------------
     DATA(pos) = strlen( html ).
@@ -359,7 +383,26 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   METHOD set_configuration.
 * ---------------------------------------------------------------------
     me->configuration = configuration.
-    config_json = convert_config2json( ).
+    config_json = convert_config2json( me->configuration ).
+    html_is_current = abap_false.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD get_configuration_json.
+* ---------------------------------------------------------------------
+    result = config_json.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_configuration_json.
+* ---------------------------------------------------------------------
+    me->config_json = config_json.
+    configuration = convert_json2config( me->config_json ).
+    html_is_current = abap_false.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.

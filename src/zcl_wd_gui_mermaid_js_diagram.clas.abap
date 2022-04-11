@@ -143,7 +143,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
+CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
 
   METHOD check_gui_dark_theme.

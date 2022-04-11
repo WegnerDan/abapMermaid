@@ -1,4 +1,4 @@
-CLASS zcl_wd_color_util DEFINITION PUBLIC FINAL CREATE PRIVATE.
+CLASS zcl_wd_mermaid_color_util DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PUBLIC SECTION.
     TYPES:
       BEGIN OF ty_rgb_hex_char_color,
@@ -59,7 +59,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_wd_color_util IMPLEMENTATION.
+CLASS zcl_wd_mermaid_color_util IMPLEMENTATION.
 
   METHOD convert_gui2hex.
 * ---------------------------------------------------------------------

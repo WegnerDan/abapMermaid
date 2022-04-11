@@ -158,7 +158,7 @@ CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
                                                          state  = 0
                                               IMPORTING  color  = DATA(gui_color)
                                               EXCEPTIONS OTHERS = 1 ).
-      DATA(gui_background_color_hsl) = zcl_wd_color_util=>convert_gui2hsl( gui_color ).
+      DATA(gui_background_color_hsl) = zcl_wd_mermaid_color_util=>convert_gui2hsl( gui_color ).
       IF gui_background_color_hsl-l < 50.
         gui_dark_theme_active = abap_true.
       ENDIF.
@@ -171,11 +171,11 @@ CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
   METHOD class_constructor.
 * ---------------------------------------------------------------------
     default_background_color =
-    zcl_wd_color_util=>get_backgrnd_color_hex_str( cl_gui_resources=>col_background_level1 ).
+    zcl_wd_mermaid_color_util=>get_backgrnd_color_hex_str( cl_gui_resources=>col_background_level1 ).
 
 * ---------------------------------------------------------------------
     default_font_color =
-    zcl_wd_color_util=>get_foregrnd_color_hex_str( cl_gui_resources=>col_textarea ).
+    zcl_wd_mermaid_color_util=>get_foregrnd_color_hex_str( cl_gui_resources=>col_textarea ).
 
 * ---------------------------------------------------------------------
     cl_gui_resources=>get_fontname( IMPORTING fontname = default_font_name ).

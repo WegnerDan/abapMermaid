@@ -68,6 +68,13 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       default_config           TYPE ty_configuration READ-ONLY.
     CLASS-METHODS:
       class_constructor.
+    EVENTS:
+      parse_error EXPORTING VALUE(error) TYPE string,
+      link_click EXPORTING VALUE(action) TYPE c OPTIONAL
+                           VALUE(frame) TYPE c OPTIONAL
+                           VALUE(getdata) TYPE c OPTIONAL
+                           VALUE(postdata) TYPE cnht_post_data_tab OPTIONAL
+                           VALUE(query_table) TYPE cnht_query_table OPTIONAL.
     METHODS:
       constructor IMPORTING parent              TYPE REF TO cl_gui_container
                             source_code         TYPE string OPTIONAL
@@ -102,10 +109,20 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
                           RETURNING VALUE(result) TYPE string,
       convert_json2config IMPORTING config_json   TYPE string
                           RETURNING VALUE(result) TYPE ty_configuration,
-      generate_html RETURNING VALUE(result) TYPE ty_html_lines.
+      generate_html RETURNING VALUE(result) TYPE ty_html_lines,
+      handle_sapevent FOR EVENT sapevent OF cl_gui_html_viewer
+        IMPORTING
+            action
+            frame
+            getdata
+            postdata
+            query_table,
+      query_table_to_string IMPORTING query_table   TYPE cnht_query_table
+                            RETURNING VALUE(result) TYPE string.
   PRIVATE SECTION.
     CONSTANTS:
-      object_id_mermaid_js_library TYPE w3objid VALUE 'ZWD_MERMAID_JS_LIBRARY' ##NO_TEXT.
+      object_id_mermaid_js_library TYPE w3objid VALUE 'ZWD_MERMAID_JS_LIBRARY' ##NO_TEXT,
+      action_parse_error           TYPE string VALUE 'actionMermaidParseError'.
     DATA:
       html_viewer           TYPE REF TO cl_gui_html_viewer,
       html_is_current       TYPE abap_bool,
@@ -118,12 +135,37 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       source_code           TYPE string,
       font_color            TYPE string,
       font_name             TYPE string,
-      font_size             TYPE string.
+      font_size             TYPE string,
+      last_parse_error      TYPE string.
+
+
 ENDCLASS.
 
 
 
-CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
+CLASS ZCL_WD_GUI_MERMAID_JS_DIAGRAM IMPLEMENTATION.
+
+
+  METHOD check_gui_dark_theme.
+* ---------------------------------------------------------------------
+    cl_gui_resources=>get_themename( IMPORTING themename = DATA(themename) ).
+    IF themename IS NOT INITIAL.
+      IF themename CS 'dark'.
+        gui_dark_theme_active = abap_true.
+      ENDIF.
+    ELSE.
+      cl_gui_resources=>get_background_color( EXPORTING  id     = cl_gui_resources=>col_background_level1
+                                                         state  = 0
+                                              IMPORTING  color  = DATA(gui_color)
+                                              EXCEPTIONS OTHERS = 1 ).
+      DATA(gui_background_color_hsl) = zcl_wd_color_util=>convert_gui2hsl( gui_color ).
+      IF gui_background_color_hsl-l < 50.
+        gui_dark_theme_active = abap_true.
+      ENDIF.
+    ENDIF.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
 
 
   METHOD class_constructor.
@@ -153,6 +195,8 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   METHOD constructor.
 * ---------------------------------------------------------------------
     html_viewer = NEW #( parent = parent ).
+    html_viewer->set_registered_events( VALUE #( ( eventid = html_viewer->m_id_sapevent ) ) ).
+    SET HANDLER handle_sapevent FOR html_viewer.
 
 * ---------------------------------------------------------------------
     set_source_code_string( source_code ).
@@ -276,10 +320,36 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
     IF source_code IS NOT INITIAL.
       html     =  html
                &&     |<script>\n|                                         ##NO_TEXT
-               &&         |var config = { config_json };\n|                ##NO_TEXT
-               &&         |mermaid.initialize(config);\n|                  ##NO_TEXT
-               &&     |</script>\n|                                        ##NO_TEXT
-               && |<div class="mermaid">\n|                                ##NO_TEXT
+               &&         |function submitSapEvent(params, action, method) \{\n| ##NO_TEXT
+               &&             |let stub_form_id = "form_" + action\n|       ##NO_TEXT
+               &&             |let form = document.getElementById(stub_form_id)\n| ##NO_TEXT
+               &&             |if (form === null) \{\n|                     ##NO_TEXT
+               &&                 |form = document.createElement("form")\n| ##NO_TEXT
+               &&                 |form.setAttribute("method", method \|\| "post")\n| ##NO_TEXT
+               &&                 |form.setAttribute("action", "sapevent:" + action)\n| ##NO_TEXT
+               &&             |\}\n|                                        ##NO_TEXT
+               &&             |for (var key in params) \{\n|                ##NO_TEXT
+               &&                 |var hiddenField = document.createElement("input")\n| ##NO_TEXT
+               &&                 |hiddenField.setAttribute("type", "hidden")\n| ##NO_TEXT
+               &&                 |hiddenField.setAttribute("name", key)\n| ##NO_TEXT
+               &&                 |hiddenField.setAttribute("value", params[key])\n| ##NO_TEXT
+               &&                 |form.appendChild(hiddenField)\n|         ##NO_TEXT
+               &&             |\}\n|                                        ##NO_TEXT
+               &&             |if (form.id !== stub_form_id) \{\n|          ##NO_TEXT
+               &&                 |document.body.appendChild(form)\n|       ##NO_TEXT
+               &&             |\}\n|                                        ##NO_TEXT
+               &&             |form.submit()\n|                             ##NO_TEXT
+               &&         |\}\n|                                            ##NO_TEXT
+               &&         |var config = { config_json };\n|                 ##NO_TEXT
+               &&         |mermaid.initialize(config);\n|                   ##NO_TEXT
+               &&         |mermaid.parseError = function (error) \{\n|      ##NO_TEXT
+*               &&             |submitSapEvent(\{"error":error.toString()\}, "{
+*                                                 action_parse_error }");\n| ##NO_TEXT
+               &&             |submitSapEvent(error.toString(), "{
+                                                 action_parse_error }");\n| ##NO_TEXT
+               &&         |\};\n|                                           ##NO_TEXT
+               &&     |</script>\n|                                         ##NO_TEXT
+               && |<div class="mermaid">\n|                                 ##NO_TEXT
                && source_code
                && |\n</div>| ##NO_TEXT.
     ENDIF.
@@ -310,6 +380,14 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   METHOD get_configuration.
 * ---------------------------------------------------------------------
     result = me->configuration.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD get_configuration_json.
+* ---------------------------------------------------------------------
+    result = config_json.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -372,6 +450,41 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD handle_sapevent.
+* ---------------------------------------------------------------------
+    IF action = action_parse_error.
+      last_parse_error = query_table_to_string( query_table ).
+      RAISE EVENT parse_error
+        EXPORTING
+          error  = last_parse_error.
+    ELSE.
+      RAISE EVENT link_click
+        EXPORTING
+          action      = action
+          frame       = frame
+          getdata     = getdata
+          postdata    = postdata
+          query_table = query_table.
+    ENDIF.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD query_table_to_string.
+* ---------------------------------------------------------------------
+    LOOP AT query_table ASSIGNING FIELD-SYMBOL(<error_char>).
+      IF <error_char>-value IS INITIAL.
+        result = result && ` `.
+      ELSE.
+        result = result && <error_char>-value.
+      ENDIF.
+    ENDLOOP.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
   METHOD set_background_color.
 * ---------------------------------------------------------------------
     me->background_color = background_color.
@@ -390,83 +503,11 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_configuration_json.
-* ---------------------------------------------------------------------
-    result = config_json.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
   METHOD set_configuration_json.
 * ---------------------------------------------------------------------
     me->config_json = config_json.
     configuration = convert_json2config( me->config_json ).
     html_is_current = abap_false.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD set_font_color.
-* ---------------------------------------------------------------------
-    me->font_color = font_color.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD set_font_name.
-* ---------------------------------------------------------------------
-    me->font_name = font_name.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD set_font_size.
-* ---------------------------------------------------------------------
-    me->font_size = font_size.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD set_source_code_string.
-* ---------------------------------------------------------------------
-    me->source_code = source_code.
-    html_is_current = abap_false.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD set_source_code_table.
-* ---------------------------------------------------------------------
-    set_source_code_string( concat_lines_of( table = source_code_lines
-                                             sep = cl_abap_char_utilities=>cr_lf ) ).
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD check_gui_dark_theme.
-* ---------------------------------------------------------------------
-    cl_gui_resources=>get_themename( IMPORTING themename = DATA(themename) ).
-    IF themename IS NOT INITIAL.
-      IF themename CS 'dark'.
-        gui_dark_theme_active = abap_true.
-      ENDIF.
-    ELSE.
-      cl_gui_resources=>get_background_color( EXPORTING  id     = cl_gui_resources=>col_background_level1
-                                                         state  = 0
-                                              IMPORTING  color  = DATA(gui_color)
-                                              EXCEPTIONS OTHERS = 1 ).
-      DATA(gui_background_color_hsl) = zcl_wd_color_util=>convert_gui2hsl( gui_color ).
-      IF gui_background_color_hsl-l < 50.
-        gui_dark_theme_active = abap_true.
-      ENDIF.
-    ENDIF.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -521,6 +562,48 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
     default_config-gantt-number_section_styles = 4.
     default_config-gantt-axis_format = '%Y-%m-%d'.
     default_config-gantt-top_axis = abap_false.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_font_color.
+* ---------------------------------------------------------------------
+    me->font_color = font_color.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_font_name.
+* ---------------------------------------------------------------------
+    me->font_name = font_name.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_font_size.
+* ---------------------------------------------------------------------
+    me->font_size = font_size.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_source_code_string.
+* ---------------------------------------------------------------------
+    me->source_code = source_code.
+    html_is_current = abap_false.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_source_code_table.
+* ---------------------------------------------------------------------
+    set_source_code_string( concat_lines_of( table = source_code_lines
+                                             sep = cl_abap_char_utilities=>cr_lf ) ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.

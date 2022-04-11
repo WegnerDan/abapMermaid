@@ -515,6 +515,8 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
   METHOD set_default_config.
 * ---------------------------------------------------------------------
+    " default values from https://github.com/mermaid-js/mermaid/blob/develop/docs/Setup.md
+* ---------------------------------------------------------------------
     IF gui_dark_theme_active = abap_true.
       default_config-theme = 'dark' ##NO_TEXT.
     ELSE.

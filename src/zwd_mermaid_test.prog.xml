@@ -195,6 +195,12 @@
       <INT_NOTE>Status 2000</INT_NOTE>
      </RSMPE_ATRT>
     </DOC>
+    <TIT>
+     <RSMPE_TITT>
+      <CODE>TITLE_2000</CODE>
+      <TEXT>Mermaid Diagram Tester</TEXT>
+     </RSMPE_TITT>
+    </TIT>
    </CUA>
    <TPOOL>
     <item>

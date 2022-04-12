@@ -66,6 +66,7 @@ CLASS lcl_report IMPLEMENTATION.
   METHOD pbo_2000.
 * ---------------------------------------------------------------------
     SET PF-STATUS 'STATUS_2000'.
+    SET TITLEBAR 'TITLE_2000'.
 
 * ---------------------------------------------------------------------
     IF parent_container IS NOT BOUND.
@@ -91,7 +92,6 @@ CLASS lcl_report IMPLEMENTATION.
         source_editor->get_textstream( IMPORTING text = DATA(source_code) ).
         config_editor->get_textstream( IMPORTING text = DATA(config_json) ).
         cl_gui_cfw=>flush( ).
-
         diagram->set_source_code_string( source_code ).
         diagram->set_configuration_json( config_json ).
       WHEN 'PRETTY_CFG'.

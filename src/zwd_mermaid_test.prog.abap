@@ -2,7 +2,7 @@
 *& Report zwd_mermaid_test
 *&---------------------------------------------------------------------*
 *& Use Mermaid Live Editor to design the diagram and this report to
-*& test how it looks i a specific SAP GUI Theme
+*& test how it looks in a specific SAP GUI Theme
 *& https://mermaid-js.github.io/mermaid-live-editor/
 *&---------------------------------------------------------------------*
 REPORT zwd_mermaid_test.

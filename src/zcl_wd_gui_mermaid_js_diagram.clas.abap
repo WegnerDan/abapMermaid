@@ -100,7 +100,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       set_configuration IMPORTING configuration TYPE ty_configuration,
       get_configuration_json RETURNING VALUE(result) TYPE string,
       set_configuration_json IMPORTING config_json TYPE string,
-      get_last_parse_error RETURNING value(result) TYPE string.
+      get_last_parse_error RETURNING VALUE(result) TYPE string.
   PROTECTED SECTION.
     CONSTANTS:
       object_id_mermaid_js_library TYPE w3objid VALUE 'ZWD_MERMAID_JS_LIBRARY' ##NO_TEXT,
@@ -307,55 +307,58 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
   METHOD generate_html.
 * ---------------------------------------------------------------------
-    DATA(html) =  |<!doctype html><html><head>\n|                          ##NO_TEXT
-               && |<style>\n|                                              ##NO_TEXT
-               &&     |body \{\n|                                          ##NO_TEXT
-               &&         |overflow: hidden;\n|                            ##NO_TEXT
-               &&         |font-size: { font_size }pt;\n|                  ##NO_TEXT
-               &&         |font-family: "{ font_name }";\n|                ##NO_TEXT
-               &&         |color: { font_color };\n|                       ##NO_TEXT
-               &&         |background-color: { background_color };\n|      ##NO_TEXT
-               &&     |\}\n|                                               ##NO_TEXT
-               && |</style>\n|                                             ##NO_TEXT
-               && |<script src="{ mermaid_js_url }"></script>\n|           ##NO_TEXT
+    DATA(html) =  |<!doctype html><html><head>\n|                     ##NO_TEXT
+               && |<style>\n|                                         ##NO_TEXT
+               &&     |body \{\n|                                     ##NO_TEXT
+               &&         |overflow: hidden;\n|                       ##NO_TEXT
+               &&         |font-size: { font_size }pt;\n|             ##NO_TEXT
+               &&         |font-family: "{ font_name }";\n|           ##NO_TEXT
+               &&         |color: { font_color };\n|                  ##NO_TEXT
+               &&         |background-color: { background_color };\n| ##NO_TEXT
+               &&     |\}\n|                                          ##NO_TEXT
+               && |</style>\n|                                        ##NO_TEXT
+               && |<script src="{ mermaid_js_url }"></script>\n|      ##NO_TEXT
                && |</head><body>\n| ##NO_TEXT.
+
+* ---------------------------------------------------------------------
     IF source_code IS NOT INITIAL.
-      html     =  html
-               &&     |<script>\n|                                         ##NO_TEXT
-               &&         |function submitSapEvent(params, action, method) \{\n| ##NO_TEXT
-               &&             |let stub_form_id = "form_" + action\n|       ##NO_TEXT
-               &&             |let form = document.getElementById(stub_form_id)\n| ##NO_TEXT
-               &&             |if (form === null) \{\n|                     ##NO_TEXT
-               &&                 |form = document.createElement("form")\n| ##NO_TEXT
-               &&                 |form.setAttribute("method", method \|\| "post")\n| ##NO_TEXT
-               &&                 |form.setAttribute("action", "sapevent:" + action)\n| ##NO_TEXT
-               &&             |\}\n|                                        ##NO_TEXT
-               &&             |for (var key in params) \{\n|                ##NO_TEXT
-               &&                 |var hiddenField = document.createElement("input")\n| ##NO_TEXT
-               &&                 |hiddenField.setAttribute("type", "hidden")\n| ##NO_TEXT
-               &&                 |hiddenField.setAttribute("name", key)\n| ##NO_TEXT
-               &&                 |hiddenField.setAttribute("value", params[key])\n| ##NO_TEXT
-               &&                 |form.appendChild(hiddenField)\n|         ##NO_TEXT
-               &&             |\}\n|                                        ##NO_TEXT
-               &&             |if (form.id !== stub_form_id) \{\n|          ##NO_TEXT
-               &&                 |document.body.appendChild(form)\n|       ##NO_TEXT
-               &&             |\}\n|                                        ##NO_TEXT
-               &&             |form.submit()\n|                             ##NO_TEXT
-               &&         |\}\n|                                            ##NO_TEXT
-               &&         |var config = { config_json };\n|                 ##NO_TEXT
-               &&         |mermaid.initialize(config);\n|                   ##NO_TEXT
-               &&         |mermaid.parseError = function (error) \{\n|      ##NO_TEXT
-               &&             |submitSapEvent(\{"{ parse_error-key
-                                  }":error.toString()\}, "{
-                                      parse_error-action }");\n|            ##NO_TEXT
-               &&         |\};\n|                                           ##NO_TEXT
-               &&     |</script>\n|                                         ##NO_TEXT
-               && |<div class="mermaid">\n|                                 ##NO_TEXT
-               && source_code
-               && |\n</div>| ##NO_TEXT.
+      html =  html
+           && |<script>\n|                                                  ##NO_TEXT
+           && |function submitSapEvent(params, action, method) \{\n|        ##NO_TEXT
+           &&     |let stub_form_id = "form_" + action\n|                   ##NO_TEXT
+           &&     |let form = document.getElementById(stub_form_id)\n|      ##NO_TEXT
+           &&     |if (form === null) \{\n|                                 ##NO_TEXT
+           &&         |form = document.createElement("form")\n|             ##NO_TEXT
+           &&         |form.setAttribute("method", method \|\| "post")\n|   ##NO_TEXT
+           &&         |form.setAttribute("action", "sapevent:" + action)\n| ##NO_TEXT
+           &&     |\}\n|                                                    ##NO_TEXT
+           &&     |for (var key in params) \{\n|                            ##NO_TEXT
+           &&         |var hiddenField = document.createElement("input")\n| ##NO_TEXT
+           &&         |hiddenField.setAttribute("type", "hidden")\n|        ##NO_TEXT
+           &&         |hiddenField.setAttribute("name", key)\n|             ##NO_TEXT
+           &&         |hiddenField.setAttribute("value", params[key])\n|    ##NO_TEXT
+           &&         |form.appendChild(hiddenField)\n|                     ##NO_TEXT
+           &&     |\}\n|                                                    ##NO_TEXT
+           &&     |if (form.id !== stub_form_id) \{\n|                      ##NO_TEXT
+           &&         |document.body.appendChild(form)\n|                   ##NO_TEXT
+           &&     |\}\n|                                                    ##NO_TEXT
+           &&     |form.submit()\n|                                         ##NO_TEXT
+           && |\}\n|                                                        ##NO_TEXT
+           && |var config = { config_json };\n|                             ##NO_TEXT
+           && |mermaid.initialize(config);\n|                               ##NO_TEXT
+           && |mermaid.parseError = function (error) \{\n|                  ##NO_TEXT
+           &&     |submitSapEvent(\{"{ parse_error-key                      ##NO_TEXT
+                      }":error.toString()\}, "{                             ##NO_TEXT
+                          parse_error-action }");\n|                        ##NO_TEXT
+           && |\};\n|                                                       ##NO_TEXT
+           && |</script>\n|                                                 ##NO_TEXT
+           && |<div class="mermaid">\n|                                     ##NO_TEXT
+           && source_code
+           && |\n</div>| ##NO_TEXT.
     ENDIF.
-    html       =  html
-               && |</body></html>| ##NO_TEXT.
+
+* ---------------------------------------------------------------------
+    html = html && |</body></html>| ##NO_TEXT.
 
 * ---------------------------------------------------------------------
     DATA(pos) = strlen( html ).

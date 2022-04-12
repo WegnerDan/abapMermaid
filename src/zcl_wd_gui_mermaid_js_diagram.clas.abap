@@ -99,7 +99,8 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       get_configuration RETURNING VALUE(result) TYPE ty_configuration,
       set_configuration IMPORTING configuration TYPE ty_configuration,
       get_configuration_json RETURNING VALUE(result) TYPE string,
-      set_configuration_json IMPORTING config_json TYPE string.
+      set_configuration_json IMPORTING config_json TYPE string,
+      get_last_parse_error RETURNING value(result) TYPE string.
   PROTECTED SECTION.
     CONSTANTS:
       object_id_mermaid_js_library TYPE w3objid VALUE 'ZWD_MERMAID_JS_LIBRARY' ##NO_TEXT,
@@ -599,5 +600,12 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 * ---------------------------------------------------------------------
   ENDMETHOD.
 
+
+  METHOD get_last_parse_error.
+* ---------------------------------------------------------------------
+    result = last_parse_error.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
 
 ENDCLASS.

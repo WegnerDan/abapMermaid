@@ -80,6 +80,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
                             source_code         TYPE string OPTIONAL
                             configuration       TYPE ty_configuration OPTIONAL
                             allow_empty_control TYPE abap_bool DEFAULT abap_false
+                            hide_scrollbars     TYPE abap_bool DEFAULT abap_true
                   RAISING   zcx_wd_gui_mermaid_js_diagram,
       display RAISING zcx_wd_gui_mermaid_js_diagram,
       get_current_html_table RETURNING VALUE(result) TYPE ty_html_lines,
@@ -100,7 +101,9 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       set_configuration IMPORTING configuration TYPE ty_configuration,
       get_configuration_json RETURNING VALUE(result) TYPE string,
       set_configuration_json IMPORTING config_json TYPE string,
-      get_last_parse_error RETURNING VALUE(result) TYPE string.
+      get_last_parse_error RETURNING VALUE(result) TYPE string,
+      get_scrollbars_hidden RETURNING VALUE(result) TYPE abap_bool,
+      set_scrollbars_hidden IMPORTING scrollbars_hidden TYPE abap_bool.
   PROTECTED SECTION.
     CONSTANTS:
       object_id_mermaid_js_library TYPE w3objid VALUE 'ZWD_MERMAID_JS_LIBRARY' ##NO_TEXT,
@@ -130,6 +133,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       html_is_current       TYPE abap_bool,
       html_lines            TYPE ty_html_lines,
       empty_control_allowed TYPE abap_bool,
+      scrollbars_hidden     TYPE abap_bool,
       configuration         TYPE ty_configuration,
       config_json           TYPE string,
       mermaid_js_url        TYPE c LENGTH 256,
@@ -216,6 +220,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
     font_size = default_font_size.
     font_name = default_font_name.
     empty_control_allowed = allow_empty_control.
+    scrollbars_hidden = hide_scrollbars.
 
 * ---------------------------------------------------------------------
     html_viewer->load_mime_object( EXPORTING object_id  = object_id_mermaid_js_library
@@ -307,18 +312,25 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
   METHOD generate_html.
 * ---------------------------------------------------------------------
-    DATA(html) =  |<!doctype html><html><head>\n|                     ##NO_TEXT
-               && |<style>\n|                                         ##NO_TEXT
-               &&     |body \{\n|                                     ##NO_TEXT
-               &&         |overflow: hidden;\n|                       ##NO_TEXT
-               &&         |font-size: { font_size }pt;\n|             ##NO_TEXT
-               &&         |font-family: "{ font_name }";\n|           ##NO_TEXT
-               &&         |color: { font_color };\n|                  ##NO_TEXT
-               &&         |background-color: { background_color };\n| ##NO_TEXT
-               &&     |\}\n|                                          ##NO_TEXT
-               && |</style>\n|                                        ##NO_TEXT
-               && |<script src="{ mermaid_js_url }"></script>\n|      ##NO_TEXT
-               && |</head><body>\n| ##NO_TEXT.
+    DATA(html) =  |<!doctype html><html><head>\n| ##NO_TEXT
+               && |<style>\n|                     ##NO_TEXT
+               &&     |body \{\n| ##NO_TEXT.
+
+* ---------------------------------------------------------------------
+    IF scrollbars_hidden = abap_true.
+      html = html && |overflow: hidden;\n| ##NO_TEXT.
+    ENDIF.
+
+* ---------------------------------------------------------------------
+    html =  html
+         &&         |font-size: { font_size }pt;\n|             ##NO_TEXT
+         &&         |font-family: "{ font_name }";\n|           ##NO_TEXT
+         &&         |color: { font_color };\n|                  ##NO_TEXT
+         &&         |background-color: { background_color };\n| ##NO_TEXT
+         &&     |\}\n|                                          ##NO_TEXT
+         && |</style>\n|                                        ##NO_TEXT
+         && |<script src="{ mermaid_js_url }"></script>\n|      ##NO_TEXT
+         && |</head><body>\n| ##NO_TEXT.
 
 * ---------------------------------------------------------------------
     IF source_code IS NOT INITIAL.
@@ -610,5 +622,22 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
+
+
+  METHOD get_scrollbars_hidden.
+* ---------------------------------------------------------------------
+    result = scrollbars_hidden.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD set_scrollbars_hidden.
+* ---------------------------------------------------------------------
+    me->scrollbars_hidden = scrollbars_hidden.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
 
 ENDCLASS.

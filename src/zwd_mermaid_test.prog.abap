@@ -138,7 +138,8 @@ CLASS lcl_report IMPLEMENTATION.
 * ---------------------------------------------------------------------
     diagram = NEW #( parent = splitter_container->get_container( row    = 1
                                                                  column = 2 )
-                     allow_empty_control = abap_true ).
+                     allow_empty_control = abap_true
+                     hide_scrollbars = abap_false ).
     SET HANDLER handle_parse_error FOR diagram.
     config_editor->set_textstream( pretty_print_json( diagram->get_configuration_json( ) ) ).
     diagram->set_source_code_string( initial_diagram ).

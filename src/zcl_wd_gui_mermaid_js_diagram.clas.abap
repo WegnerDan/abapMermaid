@@ -69,7 +69,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
     CLASS-METHODS:
       class_constructor.
     EVENTS:
-      parse_error EXPORTING VALUE(error) TYPE string,
+      parse_error_ocurred EXPORTING VALUE(error) TYPE string,
       link_click EXPORTING VALUE(action) TYPE c OPTIONAL
                            VALUE(frame) TYPE c OPTIONAL
                            VALUE(getdata) TYPE c OPTIONAL
@@ -101,6 +101,12 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
       get_configuration_json RETURNING VALUE(result) TYPE string,
       set_configuration_json IMPORTING config_json TYPE string.
   PROTECTED SECTION.
+    CONSTANTS:
+      object_id_mermaid_js_library TYPE w3objid VALUE 'ZWD_MERMAID_JS_LIBRARY' ##NO_TEXT,
+      BEGIN OF parse_error,
+        key    TYPE string VALUE 'parseError' ##NO_TEXT,
+        action TYPE string VALUE 'actionMermaidParseError' ##NO_TEXT,
+      END OF parse_error.
     CLASS-METHODS:
       check_gui_dark_theme,
       set_default_config.
@@ -116,13 +122,8 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
             frame
             getdata
             postdata
-            query_table,
-      query_table_to_string IMPORTING query_table   TYPE cnht_query_table
-                            RETURNING VALUE(result) TYPE string.
+            query_table.
   PRIVATE SECTION.
-    CONSTANTS:
-      object_id_mermaid_js_library TYPE w3objid VALUE 'ZWD_MERMAID_JS_LIBRARY' ##NO_TEXT,
-      action_parse_error           TYPE string VALUE 'actionMermaidParseError'.
     DATA:
       html_viewer           TYPE REF TO cl_gui_html_viewer,
       html_is_current       TYPE abap_bool,
@@ -343,10 +344,9 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
                &&         |var config = { config_json };\n|                 ##NO_TEXT
                &&         |mermaid.initialize(config);\n|                   ##NO_TEXT
                &&         |mermaid.parseError = function (error) \{\n|      ##NO_TEXT
-*               &&             |submitSapEvent(\{"error":error.toString()\}, "{
-*                                                 action_parse_error }");\n| ##NO_TEXT
-               &&             |submitSapEvent(error.toString(), "{
-                                                 action_parse_error }");\n| ##NO_TEXT
+               &&             |submitSapEvent(\{"{ parse_error-key
+                                  }":error.toString()\}, "{
+                                      parse_error-action }");\n|            ##NO_TEXT
                &&         |\};\n|                                           ##NO_TEXT
                &&     |</script>\n|                                         ##NO_TEXT
                && |<div class="mermaid">\n|                                 ##NO_TEXT
@@ -452,9 +452,11 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
   METHOD handle_sapevent.
 * ---------------------------------------------------------------------
-    IF action = action_parse_error.
-      last_parse_error = query_table_to_string( query_table ).
-      RAISE EVENT parse_error
+    IF action = parse_error-action.
+      last_parse_error = replace( val = concat_lines_of( postdata )
+                                  sub = parse_error-key && '='
+                                  with = '' ).
+      RAISE EVENT parse_error_ocurred
         EXPORTING
           error  = last_parse_error.
     ELSE.
@@ -466,20 +468,6 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
           postdata    = postdata
           query_table = query_table.
     ENDIF.
-
-* ---------------------------------------------------------------------
-  ENDMETHOD.
-
-
-  METHOD query_table_to_string.
-* ---------------------------------------------------------------------
-    LOOP AT query_table ASSIGNING FIELD-SYMBOL(<error_char>).
-      IF <error_char>-value IS INITIAL.
-        result = result && ` `.
-      ELSE.
-        result = result && <error_char>-value.
-      ENDIF.
-    ENDLOOP.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.

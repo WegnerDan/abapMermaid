@@ -31,7 +31,7 @@ CLASS lcl_report DEFINITION.
     METHODS:
       pretty_print_json IMPORTING unformatted_json TYPE string
                         RETURNING VALUE(result)    TYPE string,
-      handle_parse_error FOR EVENT parse_error OF zcl_wd_gui_mermaid_js_diagram
+      handle_parse_error FOR EVENT parse_error_ocurred OF zcl_wd_gui_mermaid_js_diagram
         IMPORTING error,
       create_objects.
 ENDCLASS.

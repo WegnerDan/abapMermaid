@@ -358,9 +358,9 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
            && |\}\n|                                                        ##NO_TEXT
            && |var config = { config_json };\n|                             ##NO_TEXT
            && |mermaid.initialize(config);\n|                               ##NO_TEXT
-           && |mermaid.parseError = function (error) \{\n|                  ##NO_TEXT
+           && |mermaid.parseError = function (error, hash) \{\n|            ##NO_TEXT
            &&     |submitSapEvent(\{"{ parse_error-key                      ##NO_TEXT
-                      }":error.toString()\}, "{                             ##NO_TEXT
+                      }":error.error\}, "{                                  ##NO_TEXT
                           parse_error-action }");\n|                        ##NO_TEXT
            && |\};\n|                                                       ##NO_TEXT
            && |</script>\n|                                                 ##NO_TEXT
@@ -411,8 +411,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
   METHOD get_current_html_string.
 * ---------------------------------------------------------------------
-    result = concat_lines_of( table = html_lines
-                              sep = cl_abap_char_utilities=>cr_lf ).
+    result = concat_lines_of( html_lines ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -520,7 +519,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   METHOD set_default_config.
 * ---------------------------------------------------------------------
     " default values from
-    " https://github.com/mermaid-js/mermaid/blob/develop/docs/Setup.md#mermaidapi-configuration-defaults
+    " https://mermaid-js.github.io/mermaid/#/Setup?id=mermaidapi-configuration-defaults
 * ---------------------------------------------------------------------
     IF gui_dark_theme_active = abap_true.
       default_config-theme = 'dark' ##NO_TEXT.

@@ -33,7 +33,8 @@ CLASS lcl_report DEFINITION.
                         RETURNING VALUE(result)    TYPE string,
       handle_parse_error FOR EVENT parse_error_ocurred OF zcl_wd_gui_mermaid_js_diagram
         IMPORTING error,
-      create_objects.
+      create_objects,
+      copy_html_to_clipboard.
 ENDCLASS.
 DATA report TYPE REF TO lcl_report ##needed.
 
@@ -98,6 +99,8 @@ CLASS lcl_report IMPLEMENTATION.
         config_editor->get_textstream( IMPORTING text = config_json ).
         cl_gui_cfw=>flush( ).
         config_editor->set_textstream( pretty_print_json( config_json ) ).
+      WHEN 'COPY_HTML'.
+        copy_html_to_clipboard( ).
     ENDCASE.
 
 * ---------------------------------------------------------------------
@@ -168,6 +171,29 @@ CLASS lcl_report IMPLEMENTATION.
   METHOD handle_parse_error.
 * ---------------------------------------------------------------------
     error_editor->set_textstream( error ).
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD copy_html_to_clipboard.
+* ---------------------------------------------------------------------
+    TYPES ty_c LENGTH 100000.
+    DATA return_code TYPE i.
+    DATA html_lines TYPE TABLE OF ty_c.
+* ---------------------------------------------------------------------
+    html_lines = VALUE #( ( diagram->get_current_html_string( ) ) ).
+    cl_gui_frontend_services=>clipboard_export( IMPORTING data = html_lines
+                                                CHANGING rc = return_code
+                                                EXCEPTIONS cntl_error           = 1
+                                                           error_no_gui         = 2
+                                                           not_supported_by_gui = 3
+                                                           no_authority         = 4
+                                                           OTHERS               = 5 ).
+    IF sy-subrc <> 0.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+      WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.

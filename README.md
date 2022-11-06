@@ -37,3 +37,6 @@ Use this to test how a diagram looks in SAP GUI after designing with [Mermaid Li
 Includes basic error handling (parse errors are displayed in the bottom left corner) and configuration editable as JSON.
 
 ![image](https://user-images.githubusercontent.com/6908247/162852877-9c5b6dae-5d97-4164-b03e-1e31092d06a7.png)
+
+## abapMermaidDocflow
+[See Details](https://github.com/thedoginthewok/abapMermaidDocflow)

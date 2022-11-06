@@ -33,6 +33,8 @@ CLASS lcl_report DEFINITION.
                         RETURNING VALUE(result)    TYPE string,
       handle_parse_error FOR EVENT parse_error_ocurred OF zcl_wd_gui_mermaid_js_diagram
         IMPORTING error,
+      handle_link_click FOR EVENT link_click OF zcl_wd_gui_mermaid_js_diagram
+        IMPORTING action frame getdata postdata query_table sender,
       create_objects,
       copy_html_to_clipboard.
 ENDCLASS.
@@ -143,7 +145,9 @@ CLASS lcl_report IMPLEMENTATION.
                                                                  column = 2 )
                      allow_empty_control = abap_true
                      hide_scrollbars = abap_false ).
-    SET HANDLER handle_parse_error FOR diagram.
+    SET HANDLER handle_parse_error
+                handle_link_click
+    FOR diagram.
     config_editor->set_textstream( pretty_print_json( diagram->get_configuration_json( ) ) ).
     diagram->set_source_code_string( initial_diagram ).
 
@@ -171,6 +175,25 @@ CLASS lcl_report IMPLEMENTATION.
   METHOD handle_parse_error.
 * ---------------------------------------------------------------------
     error_editor->set_textstream( error ).
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD handle_link_click.
+* ---------------------------------------------------------------------
+    DATA(demo_output) = cl_demo_output=>new( ).
+    demo_output->write( data = action
+                        name = 'action' ).
+    demo_output->write( data = frame
+                        name = 'frame' ).
+    demo_output->write( data = getdata
+                        name = 'getdata' ).
+    demo_output->write( data = postdata
+                        name = 'postdata' ).
+    demo_output->write( data = query_table
+                        name = 'query_table' ).
+    demo_output->display( ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.

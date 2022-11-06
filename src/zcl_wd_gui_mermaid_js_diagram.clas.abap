@@ -119,7 +119,11 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
                           RETURNING VALUE(result) TYPE string,
       convert_json2config IMPORTING config_json   TYPE string
                           RETURNING VALUE(result) TYPE ty_configuration,
-      generate_html RETURNING VALUE(result) TYPE ty_html_lines,
+      generate_html RETURNING VALUE(result) TYPE string,
+      html_string2table IMPORTING VALUE(html)   TYPE string
+                        RETURNING VALUE(result) TYPE ty_html_lines,
+      html_table2string IMPORTING html          TYPE ty_html_lines
+                        RETURNING VALUE(result) TYPE string,
       handle_sapevent FOR EVENT sapevent OF cl_gui_html_viewer
         IMPORTING
             action
@@ -276,7 +280,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
     ENDIF.
 
 * ---------------------------------------------------------------------
-    html_lines = generate_html( ).
+    html_lines = html_string2table( generate_html( ) ).
 
 * ---------------------------------------------------------------------
     DATA assigned_url TYPE cnht_url.
@@ -312,66 +316,71 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
   METHOD generate_html.
 * ---------------------------------------------------------------------
-    DATA(html) =  |<!doctype html><html><head>\n| ##NO_TEXT
-               && |<style>\n|                     ##NO_TEXT
-               &&     |body \{\n| ##NO_TEXT.
+    result =  |<!doctype html><html><head>\n| ##NO_TEXT
+           && |<style>\n|                     ##NO_TEXT
+           &&     |body \{\n| ##NO_TEXT.
 
 * ---------------------------------------------------------------------
     IF scrollbars_hidden = abap_true.
-      html = html && |overflow: hidden;\n| ##NO_TEXT.
+      result = result && |overflow: hidden;\n| ##NO_TEXT.
     ENDIF.
 
 * ---------------------------------------------------------------------
-    html =  html
-         &&         |font-size: { font_size }pt;\n|             ##NO_TEXT
-         &&         |font-family: "{ font_name }";\n|           ##NO_TEXT
-         &&         |color: { font_color };\n|                  ##NO_TEXT
-         &&         |background-color: { background_color };\n| ##NO_TEXT
-         &&     |\}\n|                                          ##NO_TEXT
-         && |</style>\n|                                        ##NO_TEXT
-         && |<script src="{ mermaid_js_url }"></script>\n|      ##NO_TEXT
-         && |</head><body>\n| ##NO_TEXT.
+    result =  result
+           &&         |font-size: { font_size }pt;\n|             ##NO_TEXT
+           &&         |font-family: "{ font_name }";\n|           ##NO_TEXT
+           &&         |color: { font_color };\n|                  ##NO_TEXT
+           &&         |background-color: { background_color };\n| ##NO_TEXT
+           &&     |\}\n|                                          ##NO_TEXT
+           && |</style>\n|                                        ##NO_TEXT
+           && |<script src="{ mermaid_js_url }"></script>\n|      ##NO_TEXT
+           && |</head><body>\n| ##NO_TEXT.
 
 * ---------------------------------------------------------------------
     IF source_code IS NOT INITIAL.
-      html =  html
-           && |<script>\n|                                                  ##NO_TEXT
-           && |function submitSapEvent(params, action, method) \{\n|        ##NO_TEXT
-           &&     |let stub_form_id = "form_" + action\n|                   ##NO_TEXT
-           &&     |let form = document.getElementById(stub_form_id)\n|      ##NO_TEXT
-           &&     |if (form === null) \{\n|                                 ##NO_TEXT
-           &&         |form = document.createElement("form")\n|             ##NO_TEXT
-           &&         |form.setAttribute("method", method \|\| "post")\n|   ##NO_TEXT
-           &&         |form.setAttribute("action", "sapevent:" + action)\n| ##NO_TEXT
-           &&     |\}\n|                                                    ##NO_TEXT
-           &&     |for (var key in params) \{\n|                            ##NO_TEXT
-           &&         |var hiddenField = document.createElement("input")\n| ##NO_TEXT
-           &&         |hiddenField.setAttribute("type", "hidden")\n|        ##NO_TEXT
-           &&         |hiddenField.setAttribute("name", key)\n|             ##NO_TEXT
-           &&         |hiddenField.setAttribute("value", params[key])\n|    ##NO_TEXT
-           &&         |form.appendChild(hiddenField)\n|                     ##NO_TEXT
-           &&     |\}\n|                                                    ##NO_TEXT
-           &&     |if (form.id !== stub_form_id) \{\n|                      ##NO_TEXT
-           &&         |document.body.appendChild(form)\n|                   ##NO_TEXT
-           &&     |\}\n|                                                    ##NO_TEXT
-           &&     |form.submit()\n|                                         ##NO_TEXT
-           && |\}\n|                                                        ##NO_TEXT
-           && |var config = { config_json };\n|                             ##NO_TEXT
-           && |mermaid.initialize(config);\n|                               ##NO_TEXT
-           && |mermaid.parseError = function (error, hash) \{\n|            ##NO_TEXT
-           &&     |submitSapEvent(\{"{ parse_error-key                      ##NO_TEXT
-                      }":error.error\}, "{                                  ##NO_TEXT
-                          parse_error-action }");\n|                        ##NO_TEXT
-           && |\};\n|                                                       ##NO_TEXT
-           && |</script>\n|                                                 ##NO_TEXT
-           && |<div class="mermaid">\n|                                     ##NO_TEXT
-           && source_code
-           && |\n</div>| ##NO_TEXT.
+      result =  result
+             && |<script>\n|                                                  ##NO_TEXT
+             && |function submitSapEvent(params, action, method) \{\n|        ##NO_TEXT
+             &&     |let stub_form_id = "form_" + action\n|                   ##NO_TEXT
+             &&     |let form = document.getElementById(stub_form_id)\n|      ##NO_TEXT
+             &&     |if (form === null) \{\n|                                 ##NO_TEXT
+             &&         |form = document.createElement("form")\n|             ##NO_TEXT
+             &&         |form.setAttribute("method", method \|\| "post")\n|   ##NO_TEXT
+             &&         |form.setAttribute("action", "sapevent:" + action)\n| ##NO_TEXT
+             &&     |\}\n|                                                    ##NO_TEXT
+             &&     |for (var key in params) \{\n|                            ##NO_TEXT
+             &&         |var hiddenField = document.createElement("input")\n| ##NO_TEXT
+             &&         |hiddenField.setAttribute("type", "hidden")\n|        ##NO_TEXT
+             &&         |hiddenField.setAttribute("name", key)\n|             ##NO_TEXT
+             &&         |hiddenField.setAttribute("value", params[key])\n|    ##NO_TEXT
+             &&         |form.appendChild(hiddenField)\n|                     ##NO_TEXT
+             &&     |\}\n|                                                    ##NO_TEXT
+             &&     |if (form.id !== stub_form_id) \{\n|                      ##NO_TEXT
+             &&         |document.body.appendChild(form)\n|                   ##NO_TEXT
+             &&     |\}\n|                                                    ##NO_TEXT
+             &&     |form.submit()\n|                                         ##NO_TEXT
+             && |\}\n|                                                        ##NO_TEXT
+             && |var config = { config_json };\n|                             ##NO_TEXT
+             && |mermaid.initialize(config);\n|                               ##NO_TEXT
+             && |mermaid.parseError = function (error, hash) \{\n|            ##NO_TEXT
+             &&     |submitSapEvent(\{"{ parse_error-key                      ##NO_TEXT
+                        }":error.error\}, "{                                  ##NO_TEXT
+                            parse_error-action }");\n|                        ##NO_TEXT
+             && |\};\n|                                                       ##NO_TEXT
+             && |</script>\n|                                                 ##NO_TEXT
+             && |<div class="mermaid">\n|                                     ##NO_TEXT
+             && source_code
+             && |\n</div>| ##NO_TEXT.
     ENDIF.
 
 * ---------------------------------------------------------------------
-    html = html && |</body></html>| ##NO_TEXT.
+    result = result && |</body></html>| ##NO_TEXT.
 
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD html_string2table.
 * ---------------------------------------------------------------------
     DATA(pos) = strlen( html ).
     WHILE pos > html_line_length.
@@ -380,6 +389,14 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
       pos = pos - html_line_length.
     ENDWHILE.
     APPEND html(pos) TO result.
+
+* ---------------------------------------------------------------------
+  ENDMETHOD.
+
+
+  METHOD html_table2string.
+* ---------------------------------------------------------------------
+    result = concat_lines_of( html ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -411,7 +428,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
 
   METHOD get_current_html_string.
 * ---------------------------------------------------------------------
-    result = concat_lines_of( html_lines ).
+    result = html_table2string( html_lines ).
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -491,6 +508,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   METHOD set_background_color.
 * ---------------------------------------------------------------------
     me->background_color = background_color.
+    html_is_current = abap_false.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.
@@ -634,6 +652,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram IMPLEMENTATION.
   METHOD set_scrollbars_hidden.
 * ---------------------------------------------------------------------
     me->scrollbars_hidden = scrollbars_hidden.
+    html_is_current = abap_false.
 
 * ---------------------------------------------------------------------
   ENDMETHOD.

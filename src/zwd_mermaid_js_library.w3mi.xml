@@ -6,20 +6,14 @@
    <TEXT>mermaid.min.js</TEXT>
    <PARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZWD_MERMAID_JS_LIBRARY</OBJID>
      <NAME>fileextension</NAME>
      <VALUE>.js</VALUE>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZWD_MERMAID_JS_LIBRARY</OBJID>
      <NAME>filename</NAME>
      <VALUE>mermaid.min.js</VALUE>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZWD_MERMAID_JS_LIBRARY</OBJID>
      <NAME>mimetype</NAME>
      <VALUE>text/javascript</VALUE>
     </WWWPARAMS>

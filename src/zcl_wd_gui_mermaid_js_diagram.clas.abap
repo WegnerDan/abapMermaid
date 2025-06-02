@@ -133,7 +133,7 @@ CLASS zcl_wd_gui_mermaid_js_diagram DEFINITION PUBLIC CREATE PUBLIC.
             query_table.
   PRIVATE SECTION.
     DATA:
-      html_viewer           TYPE REF TO cl_gui_html_viewer,
+      html_viewer           TYPE REF TO zcl_wd_mermaid_html_viewer,
       html_is_current       TYPE abap_bool,
       html_lines            TYPE ty_html_lines,
       empty_control_allowed TYPE abap_bool,

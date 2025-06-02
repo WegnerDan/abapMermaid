@@ -1,0 +1,14 @@
+CLASS zcl_wd_mermaid_html_viewer DEFINITION
+  PUBLIC
+  INHERITING FROM cl_gui_html_viewer
+  CREATE PUBLIC.
+
+  PUBLIC SECTION.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_wd_mermaid_html_viewer IMPLEMENTATION.
+ENDCLASS.

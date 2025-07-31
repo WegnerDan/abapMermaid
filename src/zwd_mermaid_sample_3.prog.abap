@@ -51,6 +51,12 @@ START-OF-SELECTION.
     MESSAGE 'select at lease one visibility type' TYPE 'I'.
     STOP.
   ENDIF.
+  TRY.
+      DATA(class) = cl_oo_class=>get_instance( p_clsnam ).
+    CATCH cx_class_not_existent INTO DATA(class_error).
+      MESSAGE class_error TYPE 'I'.
+      STOP.
+  ENDTRY.
 
   DATA r_exposure TYPE RANGE OF seoexpose.
   IF p_public = abap_true.
@@ -68,7 +74,6 @@ START-OF-SELECTION.
   APPEND |classDiagram\r| TO code.
   APPEND |class { p_clsnam } \{\r| TO code.
 
-  DATA(class) = cl_oo_class=>get_instance( p_clsnam ).
   DATA format TYPE string.
 
   "Attributes
@@ -84,7 +89,7 @@ START-OF-SELECTION.
   SORT methods BY exposure DESCENDING.
   LOOP AT methods INTO DATA(meth) WHERE exposure IN r_exposure.
     format = helper=>level( meth-mtddecltyp ).
-    APPEND |\t{ helper=>exposure( attr-exposure ) }{ meth-cmpname }(){ format }\r| TO code.
+    APPEND |\t{ helper=>exposure( meth-exposure ) }{ meth-cmpname }(){ format }\r| TO code.
   ENDLOOP.
   APPEND |\}| TO code.
 

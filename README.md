@@ -12,6 +12,8 @@ Mermaid does not work in the Internet Explorer Browser Control, so the Edge Chro
 
 ![image](https://user-images.githubusercontent.com/6908247/162700774-2aedd4ac-526c-4b82-9dff-cb331ddf3cf4.png)
 
+And SAP GUI version should be from 7.70 or higher. 
+
 
 # Preview
 ```abap

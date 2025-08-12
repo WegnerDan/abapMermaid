@@ -11,6 +11,268 @@
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
+   <LINES>
+    <TLINE>
+     <TDFORMAT>U1</TDFORMAT>
+     <TDLINE>ABAP Component Documentation: ZCL_WD_MERMAID_COLOR_UTIL</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U2</TDFORMAT>
+     <TDLINE>1. Component Overview</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;Type&lt;/&gt;: Class</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;Technical Category&lt;/&gt;: GUI/Color Management</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;System Role&lt;/&gt;: Utility class for color conversion and management</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>in Web Dynpro applications</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U2</TDFORMAT>
+     <TDLINE>2. Technical Analysis</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>2.1 Core Functionality</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Converting between different color formats (RGB, HSL, HEX)</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Retrieving system colors (background/foreground) in HEX format</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Performing basic mathematical operations on floating-point values</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>2.2 Technical Architecture</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;Interfaces&lt;/&gt;:</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B2</TDFORMAT>
+     <TDLINE>  Public methods with clear parameter and return value documentation</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B2</TDFORMAT>
+     <TDLINE>  Uses CL_GUI_RESOURCES for system color retrieval</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;Dependencies&lt;/&gt;:</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B2</TDFORMAT>
+     <TDLINE>  SAP standard class: CL_GUI_RESOURCES</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B2</TDFORMAT>
+     <TDLINE>  Internal helper methods (get_max, get_min)</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;Data Flow&lt;/&gt;:</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B2</TDFORMAT>
+     <TDLINE>  Input: Color values in various formats</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B2</TDFORMAT>
+     <TDLINE>  Processing: Conversion algorithms and mathematical operations</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B2</TDFORMAT>
+     <TDLINE>  Output: Converted color values or system colors</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>2.3 Implementation Details</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>*</TDFORMAT>
+     <TDLINE>The class implements custom sorting for max/min calculations and</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>handles color conversions between RGB, HSL, and HEX formats. It</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>includes error handling for GUI resource operations.</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U2</TDFORMAT>
+     <TDLINE>3. Business Context</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>3.1 Business Purpose</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Provides consistent color representation across Web Dynpro</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>applications</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Facilitates easy conversion between different color formats needed</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>for UI development</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Enables access to system colors in a standardized format (HEX)</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>3.2 Process Integration</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Supports UI developers working with Web Dynpro</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Useful for applications requiring consistent color management</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Integrates with systems needing to convert between color formats</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>3.3 Operational Impact</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Standardizes color handling across applications</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Reduces development time for color-related tasks</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Ensures consistent user experience through proper color conversion</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U2</TDFORMAT>
+     <TDLINE>4. Support &amp;(and)&amp; Maintenance</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>4.1 Configuration</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>*</TDFORMAT>
+     <TDLINE>No specific configuration required - works with standard SAP GUI</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>resources</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>4.2 Monitoring</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Performance of color conversion operations (should be negligible)</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Proper handling of system color retrieval exceptions</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>4.3 Common Issues</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Incorrect color conversions if input values are out of expected ranges</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  Exception handling for GUI resource operations needs to be properly</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>implemented by calling programs</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>U2</TDFORMAT>
+     <TDLINE>5. Additional Information</TDLINE>
+    </TLINE>
+    <TLINE/>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;Author&lt;/&gt;: Not specified in code</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;Last Updated&lt;/&gt;: No data available (last used in PROD not recorded)</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;Version&lt;/&gt;: Not explicitly versioned in code</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>B1</TDFORMAT>
+     <TDLINE>  &lt;B&gt;Note&lt;/&gt;: The class appears to be part of a Web Dynpro application</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>called &quot;MERAID&quot; based on naming convention</TDLINE>
+    </TLINE>
+   </LINES>
   </asx:values>
  </asx:abap>
 </abapGit>
